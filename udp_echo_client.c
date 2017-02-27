@@ -20,11 +20,11 @@ int main(int argc, char* argv[])
 	struct sockaddr_in echoServAddr;
 	struct sockaddr_in fromAddr;
 	unsigned short echoServerPort;
-	int fromSize;
-	char servIP;
+	socklen_t fromSize;
+	char *servIP;
 	int echoMsgLen;
 	int respMsgLen;
-	struct msg_echo massage;
+	struct msg_echo message;
 
 	if ((argc < 3) || (argc >4 )) {
 		fprintf(stderr, "Usage: %s <Server IP><Echo Word>\n", argv[0]);
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 	}
 
 	servIP = argv[1];
-	message.msg = argv[2];
+	strcpy(message.msg, argv[2]);
 	
 	if (argc == 4) {
 		echoServerPort = atoi(argv[3]);
@@ -48,26 +48,19 @@ int main(int argc, char* argv[])
 	}
 	//initialize
 	memset(&echoServAddr, 0, sizeof(echoServAddr));
-	echoServAddr.sin_family = AF_INET6;
+	echoServAddr.sin_family = AF_INET;
 	echoServAddr.sin_addr.s_addr = inet_addr(servIP);
-	echoServAddr.sin_port = AI_PASSIVE;
-	
-	//bind server addr to the socket
-	if (bind(sock, (struct sockadd *) &echoServAddr, 
-				sizeof(echoServAddr)) < 0) {
-		fprintf(stderr, "bind failed");
-		exit(3);
-	}
+	echoServAddr.sin_port = htons(echoServerPort);
 
-	if (sendto(sock, *massge, sizeof(message), 0, (struct sockaddr *)
-				&echoServAddr, sizeof(echoServAddr)) != echoStringLen) {
+	if (sendto(sock, &message, sizeof(struct msg_echo), 0, 
+	(struct sockaddr *)&echoServAddr, sizeof(echoServAddr)) < 0) {
 		fprintf(stderr, "sendto failed\n");
 		exit(4);
 	}
 
 	fromSize = sizeof(fromAddr);
-	if ((respStringLen = recvfrom(sock, message, sizeof(message), 0,
-			(struct sockaddr *)&fromAddr, &fromSize)) != echoStringLen) {
+	if ((respMsgLen = recvfrom(sock, &message, sizeof(struct msg_echo), 0,
+			(struct sockaddr *)&echoServAddr, &fromSize)) < 0 ) {
 	   	fprintf(stderr, "recv failed\n");
 		exit(5);
 	}
