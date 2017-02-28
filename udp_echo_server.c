@@ -14,6 +14,7 @@ struct echo_msg {
 	char msg[32];
 };
 
+
 int main(int argc, char* argv[])
 {
 	int sock;
