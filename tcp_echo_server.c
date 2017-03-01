@@ -62,12 +62,12 @@ int main(int argc, char* argv[])
 
 	for (;;) {
 		//receive message
-		n = read(sock, message, sizeof(message));
+		n = read(sock, &message, sizeof(message));
 		fprintf(stdout, "message = %s\n", message.msg);
 		//increment seq
 		message.seq++;
 		//send message
-		write(sock, message, sizeof(message));
+		write(sock, &message, sizeof(message));
 	}
 	close(sock);
 	close(sock0);

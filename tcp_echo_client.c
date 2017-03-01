@@ -64,11 +64,11 @@ int main(int argc, char* argv[])
 	for (;;) {
 		//get message
 		fprintf(stdout, "message: ");
-		fgets(message.msg, sizeof(messge.msg), stdin);
+		fgets(message.msg, sizeof(message.msg), stdin);
 		//send message
-		write(socket, message, sizeof(message));
+		write(sock, &message, sizeof(message));
 		//receive message
-		n = read(sock, message, sizeof(message));
+		n = read(sock, &message, sizeof(message));
 		//print received message
 		fprintf(stdout, "received: message = %s\n", message.msg);
 	}
