@@ -16,12 +16,13 @@ struct msg_echo {
 
 int main(int argc, char* argv[])
 {
+	int n;
 	int sock;
-	struct sockaddr_in echoServAddr;
-	struct sockaddr_in fromAddr;
-	unsigned short echoServerPort;
+	struct sockaddr_in server;
+	struct sockaddr_in client;
+	unsigned short serverPort;
 	socklen_t fromSize;
-	char *servIP;
+	char *serverIP;
 	int echoMsgLen;
 	int respMsgLen;
 	struct msg_echo message;
@@ -31,48 +32,35 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-	servIP = argv[1];
+	serverIP = argv[1];
 	
 	if (argc == 3) {
-		echoServerPort = atoi(argv[2]);
+		serverPort = atoi(argv[2]);
 	} else {
-		echoServerPort = 7;
+		serverPort = 7;
 	}
 
 
 	//create a socket
-	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+	if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
 		fprintf(stderr, "sock failed\n");
 		exit(2);
 	}
 	//initialize
-	memset(&echoServAddr, 0, sizeof(echoServAddr));
-	echoServAddr.sin_family = AF_INET;
-	echoServAddr.sin_addr.s_addr = inet_addr(servIP);
-	echoServAddr.sin_port = htons(echoServerPort);
+	memset(&server, 0, sizeof(server));
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = inet_addr(serverIP);
+	server.sin_port = htons(serverPort);
 
-	message.seq = 0;
-	while (1) {
-		fprintf(stdout, "message: ");
-		fgets(message.msg, 32, stdin);
-		if (sendto(sock, &message, sizeof(struct msg_echo), 0, 
-		(struct sockaddr *)&echoServAddr, sizeof(echoServAddr)) < 0) {
-			fprintf(stderr, "sendto failed\n");
-			exit(4);
-		}
+	//connect requset to server
+	connect(sock, (struct sockaddr *)&server, sizeof(server));
+
+	//receive date from server
+	memset(message.msg, 0, sizeof(message.msg));
+	n = read(sock, message.msg, sizeof(message.msg));
+
+	printf("%d, %s\n", n, message.msg);
 	
-		fromSize = sizeof(fromAddr);
-		if ((respMsgLen = recvfrom(sock, &message, sizeof(struct msg_echo), 0,
-				(struct sockaddr *)&echoServAddr, &fromSize)) < 0 ) {
-		   	fprintf(stderr, "recv failed\n");
-			exit(5);
-		}
-		fprintf(stdout, "received message = %s", message.msg);
-		fprintf(stdout, "seq = %d\n", message.seq);
-		if (message.seq > 9) {
-			break;
-		}
-	}
 	close(sock);
-	exit(0);	
+	return 0;	
 }
