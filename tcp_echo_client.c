@@ -58,8 +58,20 @@ int main(int argc, char* argv[])
 	//receive date from server
 	memset(message.msg, 0, sizeof(message.msg));
 	n = read(sock, message.msg, sizeof(message.msg));
-
 	printf("%d, %s\n", n, message.msg);
+	message.seq = 0;
+	//send and receive loop
+	for (;;) {
+		//get message
+		fprintf(stdout, "message: ");
+		fgets(message.msg, sizeof(messge.msg), stdin);
+		//send message
+		write(socket, message, sizeof(message));
+		//receive message
+		n = read(sock, message, sizeof(message));
+		//print received message
+		fprintf(stdout, "received: message = %s\n", message.msg);
+	}
 	
 	close(sock);
 	return 0;	

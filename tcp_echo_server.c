@@ -17,6 +17,7 @@ struct echo_msg {
 
 int main(int argc, char* argv[])
 {
+	int n;
 	int sock0, sock;
 	struct sockaddr_in server;
 	struct sockaddr_in client;
@@ -59,9 +60,15 @@ int main(int argc, char* argv[])
 			inet_ntoa(client.sin_addr));
 	write(sock, "HELLO", 5);
 
-	fprintf(stdout, "message = %s\n", message.msg);
-	message.seq++;
-
+	for (;;) {
+		//receive message
+		n = read(sock, message, sizeof(message));
+		fprintf(stdout, "message = %s\n", message.msg);
+		//increment seq
+		message.seq++;
+		//send message
+		write(sock, message, sizeof(message));
+	}
 	close(sock);
 	close(sock0);
 
